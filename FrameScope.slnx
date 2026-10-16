@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FrameScope.App/FrameScope.App.csproj" />
+    <Project Path="src/FrameScope.Core/FrameScope.Core.csproj" />
+    <Project Path="src/FrameScope.WindowsSensors/FrameScope.WindowsSensors.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FrameScope.Core.Tests/FrameScope.Core.Tests.csproj" />
+  </Folder>
+</Solution>

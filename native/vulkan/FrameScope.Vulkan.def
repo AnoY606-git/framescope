@@ -1,0 +1,9 @@
+LIBRARY "FrameScope.Vulkan"
+EXPORTS
+    vkNegotiateLoaderLayerInterfaceVersion
+    vkGetInstanceProcAddr
+    vkGetDeviceProcAddr
+    vk_layerGetPhysicalDeviceProcAddr
+    vkEnumerateInstanceLayerProperties
+    vkEnumerateInstanceExtensionProperties
+    vkEnumerateDeviceExtensionProperties

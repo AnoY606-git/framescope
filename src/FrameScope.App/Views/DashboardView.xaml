@@ -1,0 +1,120 @@
+<UserControl x:Class="FrameScope.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:FrameScope.App.Controls">
+    <StackPanel>
+        <DockPanel>
+            <Button Content="{Binding LaunchCaption}" Command="{Binding LaunchCommand}" Style="{StaticResource AccentButton}" DockPanel.Dock="Right" Margin="18,0,0,0" />
+            <TextBlock Text="Каждый кадр — на виду." FontSize="28" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </DockPanel>
+        <TextBlock Text="Живые данные системы и нативный HUD внутри собственного демо. Без подмены показателей." Style="{StaticResource Muted}" Margin="0,7,0,22" />
+        <Border Background="#142B35" BorderBrush="#26545C" BorderThickness="1" CornerRadius="8" Padding="14,11" Margin="0,0,0,16">
+            <TextBlock Text="{Binding Dashboard.Status}" Foreground="{StaticResource AccentBrush}" FontSize="12" />
+        </Border>
+        <UniformGrid Columns="3" Margin="-5,0,-5,0">
+            <Border Style="{StaticResource Card}" Margin="5,0,5,10">
+                <StackPanel><TextBlock Text="FPS ПРИЛОЖЕНИЯ" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Fps}" Style="{StaticResource MetricValue}" Foreground="{StaticResource AccentBrush}" /><TextBlock Text="Present-вызовы · не displayed / FG FPS" Style="{StaticResource Muted}" /></StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="5,0,5,10">
+                <StackPanel><TextBlock Text="PRESENT INTERVAL · ms" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Frametime}" Style="{StaticResource MetricValue}" /><TextBlock Text="Последний межкадровый интервал" Style="{StaticResource Muted}" /></StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="5,0,5,10">
+                <StackPanel><TextBlock Text="CPU · %" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Cpu}" Style="{StaticResource MetricValue}" /><TextBlock Text="{Binding Dashboard.CpuDetail}" Style="{StaticResource Muted}" /></StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="5,0,5,10">
+                <StackPanel><TextBlock Text="GPU · %" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Gpu}" Style="{StaticResource MetricValue}" /><TextBlock Text="Σ PID / движок → max · выбранный GPU" Style="{StaticResource Muted}" /></StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="5,0,5,10">
+                <StackPanel><TextBlock Text="RAM · GiB" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Ram}" Style="{StaticResource MetricValue}" /><TextBlock Text="{Binding Dashboard.RamDetail}" Style="{StaticResource Muted}" /></StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="5,0,5,10">
+                <StackPanel><TextBlock Text="DEDICATED VRAM · GiB" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Vram}" Style="{StaticResource MetricValue}" /><TextBlock Text="{Binding Dashboard.VramDetail}" Style="{StaticResource Muted}" /></StackPanel>
+            </Border>
+        </UniformGrid>
+        <Border Style="{StaticResource Card}" Margin="0,6,0,16">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,16"><TextBlock Text="Выбранный GPU · WDDM / Intel" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="{Binding Dashboard.GpuAdapter}" Style="{StaticResource Muted}" TextAlignment="Right" /></DockPanel>
+                <UniformGrid Columns="4">
+                    <StackPanel><TextBlock Text="{Binding Dashboard.GpuTemperatureLabel}" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.GpuTemperature}" FontSize="23" Margin="0,6,0,0" Foreground="{StaticResource AccentBrush}" /></StackPanel>
+                    <StackPanel><TextBlock Text="MEM CLOCK · MHz · WDDM" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.WddmMemoryClock}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="GPU CLOCK · MHz · INTEL" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelGpuClock}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="MEM RATE · effective/driver MHz · INTEL" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelMemoryClock}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                </UniformGrid>
+                <UniformGrid Columns="4" Margin="0,20,0,0">
+                    <StackPanel><TextBlock Text="GPU POWER · W · INTEL" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelGpuPower}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="BOARD POWER · W · INTEL" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelBoardPower}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="MEM R / W · GB/s · INTEL" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelBandwidth}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="THROTTLE FLAGS · INTEL" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelThrottle}" FontSize="23" Margin="0,6,0,0" /></StackPanel>
+                </UniformGrid>
+                <Expander Header="Дополнительные Intel-сенсоры" Margin="0,16,0,0">
+                    <UniformGrid Columns="3" Margin="0,12,0,0">
+                        <StackPanel><TextBlock Text="FAN · RPM" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelFan}" FontSize="20" Margin="0,6,0,0" /></StackPanel>
+                        <StackPanel><TextBlock Text="GPU VOLTAGE · V" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelVoltage}" FontSize="20" Margin="0,6,0,0" /></StackPanel>
+                        <StackPanel><TextBlock Text="MEM TEMP · °C" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.IntelMemoryTemperature}" FontSize="20" Margin="0,6,0,0" /></StackPanel>
+                    </UniformGrid>
+                </Expander>
+                <TextBlock Text="{Binding Dashboard.IntelStatus}" Style="{StaticResource Muted}" Margin="0,14,0,0" />
+                <DockPanel Margin="0,12,0,0">
+                    <Button Content="Повторить Intel" Command="{Binding RetryIntelCommand}" DockPanel.Dock="Right" Margin="16,0,0,0" />
+                    <Expander Header="Источник и причины N/A каждого Intel-поля"><TextBlock Text="{Binding Dashboard.IntelDiagnostics}" Style="{StaticResource Muted}" Margin="0,12,0,0" /></Expander>
+                </DockPanel>
+                <TextBlock Text="WDDM ↔ Sysman сопоставляются по точному LUID → PCI domain 0 / bus / device / function. Memory MHz — driver-reported effective rate, не частота физического oscillator. Package power не считается GPU-chip power. Fan: N/A по read-only policy. Снимки из файлов никогда не используются." Style="{StaticResource Muted}" Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+        <Border Style="{StaticResource Card}" Margin="0,6,0,16">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,16">
+                    <TextBlock Text="Время между Present" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Dashboard.FrameState}" Style="{StaticResource Muted}" TextAlignment="Right" />
+                </DockPanel>
+                <controls:FrametimeGraph Height="125" Samples="{Binding Dashboard.Graph}" />
+                <UniformGrid Columns="4" Margin="0,18,0,0">
+                    <StackPanel><TextBlock Text="1% LOW · FPS" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Low1}" FontSize="20" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="0.1% LOW · FPS" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.Low01}" FontSize="20" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="PRESENT COUNT" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.PresentCount}" FontSize="20" Margin="0,5,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="HUD SUBMISSION" Style="{StaticResource Muted}" /><TextBlock Text="{Binding Dashboard.HudCost}" FontSize="20" Margin="0,5,0,0" /></StackPanel>
+                </UniformGrid>
+                <TextBlock Text="График: последние 120 интервалов. Lows: среднее худших 1% / 0.1% за окно до 60 с (до 10 000 интервалов); нужны ≥100 / ≥1000 отсчётов. HUD submission — CPU-время, не полная GPU-стоимость." Style="{StaticResource Muted}" Margin="0,16,0,0" />
+            </StackPanel>
+        </Border>
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Настоящий preview, не макет" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="Launcher включает DLL / Vulkan layer только для FrameScope.Demo. При смене API предыдущая собственная сессия закрывается." Style="{StaticResource Muted}" Margin="0,-4,0,16" />
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="130" /></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Графический API" Style="{StaticResource Muted}" Margin="0,0,0,6" /><ComboBox ItemsSource="{Binding Apis}" DisplayMemberPath="Label" SelectedIndex="{Binding ApiIndex}" /></StackPanel>
+                    <StackPanel Grid.Column="2"><TextBlock Text="Режим окна" Style="{StaticResource Muted}" Margin="0,0,0,6" /><ComboBox ItemsSource="{Binding Modes}" DisplayMemberPath="Label" SelectedIndex="{Binding ModeIndex}" /></StackPanel>
+                    <StackPanel Grid.Column="4"><TextBlock Text="Длительность, с" Style="{StaticResource Muted}" Margin="0,0,0,6" /><TextBox Text="{Binding DurationSeconds, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}" ToolTip="0 — до выхода. Максимум 86400 секунд." /></StackPanel>
+                </Grid>
+                <Grid Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <DockPanel><TextBlock Text="CPU work budget" /><TextBlock Text="{Binding CpuLoad, StringFormat={}{0:0}%}" TextAlignment="Right" Foreground="{StaticResource AccentBrush}" /></DockPanel>
+                        <Slider Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding CpuLoad}" />
+                        <TextBlock Text="Доля бюджета 16.67 ms / кадр; не целевая загрузка CPU." Style="{StaticResource Muted}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <DockPanel><TextBlock Text="GPU draw calls" /><TextBlock Text="{Binding GpuLoad, StringFormat={}{0:0}}" TextAlignment="Right" Foreground="{StaticResource AccentBrush}" /></DockPanel>
+                        <Slider Minimum="1" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding GpuLoad}" />
+                        <TextBlock Text="Повторные отрисовки сцены за кадр (1–100)." Style="{StaticResource Muted}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="4">
+                        <DockPanel><TextBlock Text="Контролируемый статтер" /><TextBlock Text="{Binding StutterMs, StringFormat={}{0:0} ms}" TextAlignment="Right" Foreground="{StaticResource AccentBrush}" /></DockPanel>
+                        <Slider Minimum="0" Maximum="1000" TickFrequency="25" IsSnapToTickEnabled="True" Value="{Binding StutterMs}" />
+                        <TextBlock Text="Пауза каждые 2 секунды. 0 — выключено." Style="{StaticResource Muted}" />
+                    </StackPanel>
+                </Grid>
+                <CheckBox Content="VSync — синхронизация с вертикальным обновлением" IsChecked="{Binding Vsync}" Margin="0,18,0,16" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="{Binding LaunchCaption}" Command="{Binding LaunchCommand}" Style="{StaticResource AccentButton}" MinWidth="216" />
+                    <Button Content="Остановить своё демо" Command="{Binding StopCommand}" Margin="10,0,0,0" />
+                </StackPanel>
+                <TextBlock Text="{Binding OperationMessage}" Style="{StaticResource Muted}" Margin="0,14,0,0" />
+                <TextBlock Text="* Эксклюзивный режим запрашивается у драйвера и может быть недоступен. Фактический результат — в журнале. Esc — выход; Space — статтер; +/− — draw calls. Изменения нагрузки применяются при запуске." Style="{StaticResource Muted}" Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+        <Expander Header="Источники и доступность метрик"><Border Style="{StaticResource Card}" Margin="0,12,0,0"><TextBlock Text="{Binding Dashboard.Diagnostics}" Style="{StaticResource Muted}" /></Border></Expander>
+        <Expander Header="Нативный журнал запуска"><Border Style="{StaticResource Card}" Margin="0,12,0,0"><TextBox Text="{Binding Dashboard.NativeLog, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" MaxHeight="260" VerticalScrollBarVisibility="Auto" /></Border></Expander>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <PlatformTarget>x64</PlatformTarget>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>FrameScope</AssemblyName>
+    <RootNamespace>FrameScope.App</RootNamespace>
+    <Description>FrameScope — in-process HUD preview for its own DX11, DX12 and Vulkan demos.</Description>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FrameScope.Core\FrameScope.Core.csproj" />
+    <ProjectReference Include="..\FrameScope.WindowsSensors\FrameScope.WindowsSensors.csproj" />
+  </ItemGroup>
+</Project>

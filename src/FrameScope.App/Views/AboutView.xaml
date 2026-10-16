@@ -1,0 +1,40 @@
+<UserControl x:Class="FrameScope.App.Views.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock Text="Честные цифры. Ясные границы." FontSize="28" FontWeight="SemiBold" />
+        <TextBlock Text="FrameScope 0.1 · Windows x64 · .NET 10 / нативный C++ HUD" Style="{StaticResource Muted}" Margin="0,7,0,22" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Что действительно работает" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="Нативный текстовый HUD и график внутри собственного DX11 / DX12 / Vulkan демо. Сессия запускается отдельным launcher; приложение читает ограниченный seqlock-снимок через локальную разделяемую память. Зависшие или старые кадры не отображаются как свежие." Style="{StaticResource Muted}" />
+                <TextBlock Text="CPU: общее busy-время и самый занятый логический процессор по разнице системных счётчиков. RAM: физическая занятая / общая память. GPU: сумма уникальных PID внутри одного физического движка (до 100%), затем максимум движков. Выбирается самый занятый физический адаптер; при отсутствии загрузки — максимальный Dedicated Usage. VRAM берётся с того же адаптера: это не бюджет и не выделения только демо." Style="{StaticResource Muted}" Margin="0,14,0,0" />
+                <TextBlock Text="GPU temperature и частота памяти доступны через read-only WDDM. Отдельный FrameScope.Intel.exe --watch --legacy читает Level Zero Sysman установленного драйвера; данные принимаются только для единственного Intel GPU с точным PCI match выбранного LUID. Нет IGCL, новых драйверов или admin. Первый snapshot может потребовать до 30 с. При блокировке Smart App Control (4551) источник остаётся N/A без обхода защиты и без файлового fallback." Style="{StaticResource Muted}" Margin="0,14,0,0" />
+                <TextBlock Text="GPU max temperature Sysman заменяет WDDM только при достоверном reading; источник явно подписан. Memory MHz — driver-reported/effective, не physical oscillator. Card и GPU-chip power различаются; package power не присваивается GPU. Bandwidth B/s переводится в GB/s делением на 10⁹ без x32; неподтверждённые нулевые counters остаются N/A. Fan getters выключены политикой read-only upstream, RPM не запрашивается. WDDM dedicated capacity — сообщённый Windows объём, не доказанная физическая ёмкость; Sysman physical используется только при отсутствии WDDM capacity. Allocatable size/used не смешивается с physical capacity и не превращается в процент заполнения." Style="{StaticResource Muted}" Margin="0,14,0,0" />
+                <TextBlock Text="Системные метрики обновляются каждые 500 ms вне UI-потока. Первое измерение CPU — прогрев, поэтому N/A. Доступность GPU зависит от драйвера и счётчиков Windows." Style="{StaticResource Muted}" Margin="0,14,0,0" />
+            </StackPanel>
+        </Border>
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Что означают FPS и lows" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="FPS приложения — частота успешных Present-вызовов демо по QPC, а не доказанное число показанных монитором кадров. Present interval — промежуток между вызовами; это не чистое GPU render time. Frame generation, displayed FPS, задержка ввода и процент потерянных кадров здесь не измеряются." Style="{StaticResource Muted}" />
+                <TextBlock Text="1% / 0.1% lows — обратная величина среднего интервала самых медленных 1% / 0.1% выборки. Окно ограничено 60 секундами и 10 000 интервалами; минимум 100 / 1000 отсчётов. До прогрева — N/A. Показатель HUD submission измеряет CPU-участок нативной отправки HUD, а не полный overhead или GPU-время." Style="{StaticResource Muted}" Margin="0,14,0,0" />
+            </StackPanel>
+        </Border>
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Ограничения и условная доступность" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="• Подключение к CS2 и любым другим сторонним играм; обход anti-cheat.&#10;• Внешний fallback-оверлей поверх чужих процессов.&#10;• Неподдерживаемые драйвером Intel-поля, заблокированный helper и старые snapshots: N/A, с причинами по каждому полю. Fan всегда N/A по read-only policy.&#10;• CPU temperature; displayed / generated FPS; GPU render time.&#10;• Автоматическая гарантия exclusive fullscreen — фактический режим определяет API / драйвер." Style="{StaticResource Muted}" />
+                <TextBlock Text="N/A означает отсутствие достоверного источника. Это не нулевое измерение и не демонстрационные случайные данные." Foreground="{StaticResource WarningBrush}" Margin="0,14,0,0" />
+            </StackPanel>
+        </Border>
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Локально. Без лишних привилегий." Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="Не нужны служба, драйвер, права администратора или сеть. Горячие клавиши регистрируются стандартным RegisterHotKey; если сочетание занято, приложение сообщает об этом и не перехватывает чужую регистрацию. При выходе закрывается только собственная запущенная сессия." Style="{StaticResource Muted}" />
+                <TextBlock Text="Лицензия проекта: GPL-3.0-only. Исходный код и уведомления о сторонних компонентах входят в поставку / репозиторий. Программа предоставляется без гарантий; полный текст лицензии — LICENSE в корне проекта." Style="{StaticResource Muted}" Margin="0,14,0,0" />
+                <TextBlock Text="https://github.com/AnoY606-git/framescope" FontFamily="Consolas" FontSize="12" Foreground="{StaticResource AccentBrush}" Margin="0,14,0,0" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,41 @@
+name: Ошибка preview
+description: Воспроизводимая проблема редактора или собственного Demo
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Не прикладывайте секреты или личные логи. Уязвимости сообщайте по SECURITY.md. CS2 и обход античитов исключены.
+  - type: input
+    id: version
+    attributes:
+      label: Версия FrameScope / commit и тип пакета
+      placeholder: 0.1.0-preview, portable или installer
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Windows build, GPU и версия драйвера
+    validations:
+      required: true
+  - type: dropdown
+    id: api
+    attributes:
+      label: Сценарий
+      options: [Редактор, Собственный Demo DX11, Собственный Demo DX12, Собственный Demo Vulkan, Установка или portable]
+    validations:
+      required: true
+  - type: input
+    id: mode
+    attributes:
+      label: Режим окна, разрешение и DPI
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Шаги, ожидаемое и фактическое поведение
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Минимальная диагностика без личных путей и секретов

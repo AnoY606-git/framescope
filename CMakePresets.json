@@ -1,0 +1,28 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 24, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "Windows x64 / developer shell",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/artifacts/build-native",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "BUILD_TESTING": "ON" }
+    },
+    {
+      "name": "llvm-mingw",
+      "displayName": "Windows x64 / portable LLVM-MinGW",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/artifacts/build-llvm",
+      "toolchainFile": "${sourceDir}/cmake/llvm-mingw.cmake"
+    }
+  ],
+  "buildPresets": [
+    { "name": "release", "configurePreset": "release", "jobs": 6 },
+    { "name": "llvm-mingw", "configurePreset": "llvm-mingw", "jobs": 6 }
+  ],
+  "testPresets": [
+    { "name": "release", "configurePreset": "release", "output": { "outputOnFailure": true } },
+    { "name": "llvm-mingw", "configurePreset": "llvm-mingw", "output": { "outputOnFailure": true } }
+  ]
+}

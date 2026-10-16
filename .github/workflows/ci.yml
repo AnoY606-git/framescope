@@ -1,0 +1,62 @@
+name: Build and verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+      PYTHONUTF8: '1'
+    steps:
+      - name: Source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Local SDK and SHA-256-pinned per-user Inno Setup 6.5.4
+        run: ./scripts/bootstrap.ps1 -InstallDotNet -InstallInno
+      - name: Tests, build, runtime audit and installer/portable/source packages
+        run: ./scripts/package.ps1
+      - name: Automated reports
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verification-reports
+          path: |
+            artifacts/test-results/
+            artifacts/verification.json
+            artifacts/publish/build-info.json
+            artifacts/publish/native/native-runtime.json
+            artifacts/native/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Unsigned preview packages and matching source
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: FrameScope-win-x64-preview
+          path: |
+            artifacts/packages/FrameScope-*.zip
+            artifacts/packages/FrameScope-*-setup.exe
+            artifacts/packages/FrameScope-*-release.json
+            artifacts/packages/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+  # No hardware rendering claims: real DX11/DX12/Vulkan runs are recorded separately.

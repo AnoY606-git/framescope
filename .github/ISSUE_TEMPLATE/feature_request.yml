@@ -1,0 +1,16 @@
+name: Предложение
+description: Улучшение в пределах назначения FrameScope
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую пользовательскую задачу нужно решить?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Ожидаемое поведение и способ проверки
+      description: Для метрики укажите источник/единицу, для производительности — методику измерения. CS2 и обход античитов не входят в scope.
+    validations:
+      required: true
