@@ -392,14 +392,36 @@ function Initialize-MsvcEnvironment {
     param([Parameter(Mandatory = $true)][string]$Installation)
     $developer = Join-Path $Installation 'Common7/Tools/VsDevCmd.bat'
     if (-not (Test-Path -LiteralPath $developer -PathType Leaf)) { throw 'Installed Visual Studio is missing VsDevCmd.bat.' }
-    $lines = & $env:ComSpec /d /s /c "`"`"$developer`" -no_logo -arch=amd64 -host_arch=amd64 >nul && set`""
-    if ($LASTEXITCODE -ne 0) { throw 'Unable to initialize process-local MSVC environment.' }
-    foreach ($line in $lines) {
-        $separator = $line.IndexOf('=')
-        if ($separator -gt 0) {
-            [Environment]::SetEnvironmentVariable($line.Substring(0, $separator), $line.Substring($separator + 1), 'Process')
+    if ($developer -match '["\r\n%!]') { throw 'Developer script path contains unsafe cmd quoting/expansion characters.' }
+    $start = New-Object Diagnostics.ProcessStartInfo
+    $start.FileName = $env:ComSpec
+    # Raw cmd quoting: PowerShell 7 must not reinterpret the nested /s /c quotes.
+    $start.Arguments = '/d /s /c ""{0}" -no_logo -arch=amd64 -host_arch=amd64 >nul && set"' -f $developer
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $process = New-Object Diagnostics.Process
+    $process.StartInfo = $start
+    try {
+        if (-not $process.Start()) { throw 'MSVC developer command process did not start.' }
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        $output = $stdout.Result
+        $diagnostic = $stderr.Result.Trim()
+        if ($process.ExitCode -ne 0) {
+            throw "Unable to initialize process-local MSVC environment (cmd exit $($process.ExitCode)). $diagnostic"
+        }
+        # Never print `set` output: it contains inherited CI environment values.
+        foreach ($line in ($output -split '\r?\n')) {
+            $separator = $line.IndexOf('=')
+            if ($separator -gt 0) {
+                [Environment]::SetEnvironmentVariable($line.Substring(0, $separator), $line.Substring($separator + 1), 'Process')
+            }
         }
     }
+    finally { $process.Dispose() }
 }
 
 function Enable-CompilerEnvironment {

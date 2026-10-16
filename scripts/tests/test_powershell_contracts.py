@@ -29,8 +29,8 @@ class PowerShellContracts(unittest.TestCase):
         self.assertTrue(compiler.is_file(), "Selected integration compiler is missing")
         return compiler.resolve()
 
-    def invoke(self, body):
-        executable = shutil.which("powershell.exe")
+    def invoke(self, body, executable=None):
+        executable = executable or shutil.which("powershell.exe")
         self.assertIsNotNone(executable)
         common = Path(__file__).resolve().parents[1] / "common.ps1"
         prefix = """
@@ -166,6 +166,59 @@ if (-not $caught -or $env:CXX) { throw 'Broken VS was silently replaced.' }
 Write-Output 'broken-vs-ok'
 """)
         self.assertIn("broken-vs-ok", output)
+
+    def test_real_developer_batch_with_spaces_and_metacharacters_imports_process_environment(self):
+        hosts = [shutil.which("powershell.exe")]
+        if shutil.which("pwsh.exe"):
+            hosts.append(shutil.which("pwsh.exe"))
+        with temporary_directory() as directory:
+            installation = Path(directory) / "VS fixture with spaces & (tools)"
+            developer = installation / "Common7/Tools/VsDevCmd.bat"
+            developer.parent.mkdir(parents=True)
+            developer.write_text(
+                '@echo off\n'
+                'if not "%~1"=="-no_logo" exit /b 11\n'
+                'if not "%*"=="-no_logo -arch=amd64 -host_arch=amd64" exit /b 12\n'
+                'set "FRAMESCOPE_VS_FIXTURE=spaces & equals=preserved"\n'
+                'exit /b 0\n', encoding="ascii", newline="\r\n")
+            for host in hosts:
+                with self.subTest(host=host):
+                    output = self.invoke("""
+$userBefore = [Environment]::GetEnvironmentVariable('FRAMESCOPE_VS_FIXTURE', 'User')
+$machineBefore = [Environment]::GetEnvironmentVariable('FRAMESCOPE_VS_FIXTURE', 'Machine')
+$env:FRAMESCOPE_VS_FIXTURE = 'parent-process-value'
+Initialize-MsvcEnvironment -Installation '%s'
+if ($env:FRAMESCOPE_VS_FIXTURE -ne 'spaces & equals=preserved') { throw 'Child environment was not imported intact.' }
+if ([Environment]::GetEnvironmentVariable('FRAMESCOPE_VS_FIXTURE', 'User') -ne $userBefore -or
+    [Environment]::GetEnvironmentVariable('FRAMESCOPE_VS_FIXTURE', 'Machine') -ne $machineBefore) {
+    throw 'Persistent environment was modified.'
+}
+Write-Output ('real-developer-env-ok:' + $PSVersionTable.PSVersion.Major)
+""" % str(installation).replace("'", "''"), executable=host)
+                    self.assertIn("real-developer-env-ok:", output)
+
+    def test_real_failed_developer_batch_preserves_parent_value_and_reports_exit_stderr(self):
+        hosts = [shutil.which("powershell.exe")]
+        if shutil.which("pwsh.exe"):
+            hosts.append(shutil.which("pwsh.exe"))
+        with temporary_directory() as directory:
+            installation = Path(directory) / "VS failure fixture with spaces"
+            developer = installation / "Common7/Tools/VsDevCmd.bat"
+            developer.parent.mkdir(parents=True)
+            developer.write_text('@echo off\nset "FRAMESCOPE_VS_FIXTURE=must-not-import"\n'
+                                 'echo synthetic-vs-error 1>&2\nexit /b 23\n', encoding="ascii", newline="\r\n")
+            for host in hosts:
+                with self.subTest(host=host):
+                    output = self.invoke("""
+$env:FRAMESCOPE_VS_FIXTURE = 'unchanged-parent-value'
+$caught = $false
+try { Initialize-MsvcEnvironment -Installation '%s' }
+catch { $caught = $_.Exception.Message -like '*23*synthetic-vs-error*' }
+if (-not $caught) { throw 'Actual cmd failure did not retain its exit code and diagnostic.' }
+if ($env:FRAMESCOPE_VS_FIXTURE -ne 'unchanged-parent-value') { throw 'Failed child environment was imported.' }
+Write-Output ('real-developer-failure-ok:' + $PSVersionTable.PSVersion.Major)
+""" % str(installation).replace("'", "''"), executable=host)
+                    self.assertIn("real-developer-failure-ok:", output)
 
     def test_official_inno_pin_and_explicit_iscc_precedence(self):
         python = sys.executable.replace("'", "''")
