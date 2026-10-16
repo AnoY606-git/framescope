@@ -31,6 +31,7 @@
 | DX11 HUD visibility fix | Release 20/20 и Debug 12/12 отдельных снимков | Убрано чередование HUD/пустого кадра из-за лишнего completion-query gate; без принудительного Flush/Wait |
 | Debug native HUD, первая интеграция | 8 s на каждом API, exit 0 | DX11 1125, DX12 834, Vulkan 1130 accepted presents; счётчик совпал с Demo |
 | Переработанный HUD | Реальные DX12/Vulkan снимки и exit 0 | 1132 / 1129 presents за 8 s; один запуск DX11 заблокирован до старта с 4551 |
+| Новый strip HUD в exclusive | 3/3, exit 0 | DX11 849/849, DX12 849/849, Vulkan 851/851 Demo/HUD presents; actual exclusive acquired, видимость подтверждена PNG |
 | Live Intel Debug probe | Exit 0, legacy mode | GPU 57 C, VRAM 60 C, card 23.12 W, GPU 400 MHz, memory 19000 driver-reported effective MHz, physical VRAM 12 GiB; это разовый snapshot, не константы |
 | Live WPF controller Intel pipeline | Exit 0, Starting → Live | Точный PCI 0000:03:00.0/LUID match; availableMask 811, card 23.08 W, GPU 56 C; настоящий helper stdout, без файлового fallback |
 | Self-contained publish | Собран | Финальный аудит состава пакета и установщика фиксируется отдельно |
