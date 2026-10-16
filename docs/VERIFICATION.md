@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | Managed Release build | 0 warnings / 0 errors | WPF, Core, WindowsSensors; не доказывает запуск native DLL |
 | Managed behavioral checks | 85/85 в Release и Debug | Настройки, атомарное сохранение, CPU/GPU counters, seqlock, Intel JSON/PCI/freshness/identity |
-| Python tooling | 60 passed / 1 skipped | Реальный symlink запрещён хостом; synthetic reparse-ancestor проверка пройдена |
+| Python tooling | 63 passed / 1 skipped | Включает реальный Inno version probe; symlink запрещён хостом, synthetic reparse-ancestor проверка пройдена |
 | Native compilation | Debug и первоначальный Release собраны | Не приравнивается к GPU execution |
 | Native statistics / IPC | Passed | Формулы low, лимиты истории, warmup, torn/stale snapshots, ABI |
 | CPU-only HUD layout / fonts | Passed | Четыре роли шрифта, idempotence, геометрия panel/strip; без GPU |

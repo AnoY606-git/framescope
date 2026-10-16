@@ -15,6 +15,20 @@ from test_support import temporary_directory
 
 @unittest.skipUnless(os.name == "nt", "Windows PowerShell contract tests need Windows")
 class PowerShellContracts(unittest.TestCase):
+    def trusted_inno(self):
+        # Only an explicitly supplied verified tool or bootstrap's pinned local tool.
+        # Never download/discover arbitrary executables for an integration test.
+        selected = os.environ.get("FRAMESCOPE_TEST_ISCC") or os.environ.get("FSC_ISCC")
+        if not selected:
+            local = Path(__file__).resolve().parents[2] / ".tools/inno-6.5.4/ISCC.exe"
+            if local.is_file():
+                selected = str(local)
+        if not selected:
+            self.skipTest("Set FRAMESCOPE_TEST_ISCC to an already verified Inno 6.5.4 compiler")
+        compiler = Path(selected)
+        self.assertTrue(compiler.is_file(), "Selected integration compiler is missing")
+        return compiler.resolve()
+
     def invoke(self, body):
         executable = shutil.which("powershell.exe")
         self.assertIsNotNone(executable)
@@ -166,6 +180,68 @@ if ((Resolve-Iscc) -ne $env:FSC_ISCC) { throw 'FSC_ISCC must take precedence.' }
 Write-Output 'inno-pin-ok'
 """ % python)
         self.assertIn("inno-pin-ok", output)
+
+    def test_inno_probe_decodes_vendor_version_and_rejects_help_failure_or_ambiguity(self):
+        output = self.invoke("""
+$encoded = (6 -shl 24) -bor (4 -shl 16) -bor (2 -shl 8)
+$text = "   Line 4: FRAMESCOPE_ISCC_VERSION=$encoded`r`r`n"
+if ((ConvertFrom-InnoVersionProbe -Output $text -ExitCode 0) -ne '6.4.2') { throw 'Vendor version was not decoded.' }
+$cases = @(
+    @{ Text = 'Inno Setup 6 Command-Line Compiler'; Code = 1 },
+    @{ Text = 'Inno Setup 6 Command-Line Compiler'; Code = 0 },
+    @{ Text = 'FRAMESCOPE_ISCC_VERSION=0'; Code = 0 },
+    @{ Text = 'FRAMESCOPE_ISCC_VERSION=4294967296'; Code = 0 },
+    @{ Text = $text + $text; Code = 0 },
+    @{ Text = $text; Code = 2 }
+)
+foreach ($case in $cases) {
+    $caught = $false
+    try { ConvertFrom-InnoVersionProbe -Output $case.Text -ExitCode $case.Code } catch { $caught = $true }
+    if (-not $caught) { throw 'Invalid/failed probe was accepted as a version.' }
+}
+Write-Output 'version-parser-ok'
+""")
+        self.assertIn("version-parser-ok", output)
+
+    def test_real_pinned_compiler_reports_version_despite_zero_pe_metadata_and_help_exit_one(self):
+        compiler = self.trusted_inno()
+        help_result = subprocess.run([str(compiler), "/?"], capture_output=True, timeout=30)
+        self.assertEqual(1, help_result.returncode)
+        repository = Path(__file__).resolve().parents[2]
+        output = self.invoke("""
+$script:RepositoryRoot = '%s'
+$compiler = '%s'
+$metadata = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler)
+$peVersion = '{0}.{1}.{2}.{3}' -f $metadata.FileMajorPart, $metadata.FileMinorPart, $metadata.FileBuildPart, $metadata.FilePrivatePart
+$actual = Get-InnoCompilerVersion -Compiler $compiler
+if ($actual -ne '6.5.4') { throw 'Real pinned compiler did not report its vendor version.' }
+$packageVersion = [version]$actual
+if ($packageVersion.Major -ne 6 -or $packageVersion.Minor -lt 3) { throw 'Package compatibility check rejected the real compiler.' }
+Write-Output ("metadata=$peVersion;builtin=$actual")
+""" % (str(repository).replace("'", "''"), str(compiler).replace("'", "''")))
+        self.assertIn("metadata=0.0.0.0;builtin=6.5.4", output)
+
+    def test_real_compiler_parses_release_and_debug_installer_without_generating_an_exe(self):
+        compiler = self.trusted_inno()
+        repository = Path(__file__).resolve().parents[2]
+        with temporary_directory() as directory:
+            root = Path(directory)
+            publish = root / "synthetic publish with spaces"
+            publish.mkdir()
+            (publish / "LICENSE").write_bytes((repository / "LICENSE").read_bytes())
+            (publish / "FrameScope.exe").write_text("Synthetic payload; never executable or launched.")
+            for configuration in ("Release", "Debug"):
+                with self.subTest(configuration=configuration):
+                    output = root / ("output-" + configuration)
+                    result = subprocess.run([
+                        str(compiler), "/O-", "/DAppVersion=0.1.0-preview",
+                        "/DBuildConfiguration=" + configuration, "/DPublishDir=" + str(publish),
+                        "/DOutputDir=" + str(output), str(repository / "packaging/FrameScope.iss"),
+                    ], capture_output=True, cwd=root, timeout=60)
+                    diagnostics = (result.stdout + result.stderr).decode("utf-8", errors="replace")
+                    self.assertEqual(0, result.returncode, diagnostics)
+                    self.assertIn("Output was disabled", diagnostics)
+            self.assertEqual([publish / "FrameScope.exe"], list(root.rglob("*.exe")))
 
     def test_inno_existing_directory_is_preserved_without_download(self):
         with temporary_directory() as directory:

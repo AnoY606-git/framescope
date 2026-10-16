@@ -12,15 +12,17 @@ anti-cheat software is not claimed.
 
 ## Scope
 
-- Profiles for panel and compact layouts; the own Demo is the real preview
-  target, not fabricated game readings inside the editor.
+- Panel and compact-strip profiles with crisp system fonts, semantic accents,
+  graphs and configurable metrics. The own Demo is the real preview target,
+  not fabricated game readings inside the editor.
 - FPS and frametime describe **Present-call intervals**, not displayed FPS,
   an engine counter, or Frame Generation.
 - Windows CPU/RAM data and available GPU counters. Unavailable readings are
   **N/A**, never made-up zeroes. GPU sensors are not promised for every vendor.
-- GPU temperature uses read-only WDDM where exposed by the driver. Advanced
-  Intel Level Zero Sysman support is being developed separately; no clock,
-  power-limit or fan setters, and no promise that every field is available.
+- GPU temperature uses WDDM or Intel Sysman with an explicit source. A separate
+  live Level Zero Sysman provider exposes supported GPU/VRAM temperatures,
+  clocks, voltage, card power and throttling reasons. There are no clock,
+  power-limit or fan setters and no fabricated unavailable sensor values.
 - No mandatory kernel service, elevation or Windows-security changes.
   Vulkan layer activation is scoped to the launched Demo, not the registry.
 

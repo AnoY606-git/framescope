@@ -76,10 +76,62 @@ function Resolve-Iscc {
     return Resolve-Tool -Name 'ISCC.exe' -Override $override
 }
 
+function ConvertFrom-InnoVersionProbe {
+    param([string]$Output, [int]$ExitCode)
+    if ($ExitCode -ne 0) { throw "ISCC version probe failed with exit code $ExitCode. $Output" }
+    $markers = [regex]::Matches($Output, '(?m)(?<![A-Za-z0-9_])FRAMESCOPE_ISCC_VERSION=([0-9]+)[ \t\r]*$')
+    [uint32]$encoded = 0
+    if ($markers.Count -ne 1 -or -not [uint32]::TryParse($markers[0].Groups[1].Value, [ref]$encoded)) {
+        throw 'ISCC did not provide exactly one valid PREPROCVER marker; compiler version is unknown.'
+    }
+    $major = ($encoded -shr 24) -band 255
+    $minor = ($encoded -shr 16) -band 255
+    $revision = ($encoded -shr 8) -band 255
+    $build = $encoded -band 255
+    if ($major -eq 0) { throw 'ISCC reported an invalid zero major version.' }
+    $version = '{0}.{1}.{2}' -f $major, $minor, $revision
+    if ($build -ne 0) { $version += '.' + $build }
+    return $version
+}
+
 function Get-InnoCompilerVersion {
-    param([string]$Compiler)
-    $info = [Diagnostics.FileVersionInfo]::GetVersionInfo($Compiler)
-    return '{0}.{1}.{2}' -f $info.FileMajorPart, $info.FileMinorPart, $info.FileBuildPart
+    param([Parameter(Mandatory = $true)][string]$Compiler)
+    # Official 6.5.4 binaries can have PE version 0.0.0.0. PREPROCVER is the vendor's
+    # documented version: https://jrsoftware.org/ispphelp/topic_predefinedvars.htm
+    # /? can exit 1 and is not a version API. Compile only our output-disabled stdin probe.
+    $compilerPath = Resolve-Tool -Name 'ISCC.exe' -Override $Compiler
+    $probe = [IO.File]::ReadAllText((Join-Path $script:RepositoryRoot 'packaging/version-probe.iss'))
+    $temporaryBase = [IO.Path]::GetTempPath()
+    $approved = Join-Path $temporaryBase 'opencode'
+    if ([IO.Directory]::Exists($approved)) { $temporaryBase = $approved }
+    $temporary = Join-Path $temporaryBase ('framescope-inno-version-' + [Guid]::NewGuid().ToString('N'))
+    [IO.Directory]::CreateDirectory($temporary) | Out-Null
+    $start = New-Object Diagnostics.ProcessStartInfo
+    $start.FileName = $compilerPath
+    $start.Arguments = '/O- -'
+    $start.WorkingDirectory = $temporary
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.RedirectStandardInput = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $process = New-Object Diagnostics.Process
+    $process.StartInfo = $start
+    try {
+        if (-not $process.Start()) { throw 'ISCC version probe did not start.' }
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        $process.StandardInput.Write($probe)
+        $process.StandardInput.Close()
+        $process.WaitForExit()
+        return ConvertFrom-InnoVersionProbe -Output ($stdout.Result + "`n" + $stderr.Result) -ExitCode $process.ExitCode
+    }
+    finally {
+        $process.Dispose()
+        # Never recursively delete an unexpected compiler output; preserve it for inspection.
+        try { [IO.Directory]::Delete($temporary, $false) }
+        catch { Write-Verbose 'Nonempty version-probe temporary directory preserved for inspection.' }
+    }
 }
 
 function Install-LocalInnoSetup {
@@ -108,9 +160,10 @@ function Install-LocalInnoSetup {
     Invoke-Checked $archive @('/CURRENTUSER', '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART',
         '/NOICONS', '/TASKS=', ('/DIR=' + $destination))
     $compiler = Join-Path $destination 'ISCC.exe'
-    if (-not (Test-Path -LiteralPath $compiler -PathType Leaf) -or
-        (Get-InnoCompilerVersion -Compiler $compiler) -ne $pin.Version) {
-        throw 'Installed ISCC does not match the pinned Inno version; inspect the local tool directory.'
+    if (-not (Test-Path -LiteralPath $compiler -PathType Leaf)) { throw 'Installed Inno tool directory is missing ISCC.exe.' }
+    $actualVersion = Get-InnoCompilerVersion -Compiler $compiler
+    if ($actualVersion -ne $pin.Version) {
+        throw "Installed ISCC version $actualVersion does not match pinned $($pin.Version); inspect the local tool directory."
     }
     if ($compiler -match '[\r\n]') { throw 'Tool path cannot contain a line break.' }
     $env:FSC_ISCC = $compiler

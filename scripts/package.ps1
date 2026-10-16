@@ -55,8 +55,8 @@ try {
     if ($AllowDirtySource) { $arguments += '--allow-dirty-source' }
     if (-not $PortableOnly) {
         $iscc = Resolve-Iscc
-        $compilerVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($iscc)
-        if ($compilerVersion.FileMajorPart -ne 6 -or $compilerVersion.FileMinorPart -lt 3) {
+        $compilerVersion = [version](Get-InnoCompilerVersion -Compiler $iscc)
+        if ($compilerVersion.Major -ne 6 -or $compilerVersion.Minor -lt 3) {
             throw 'Use Inno Setup 6.3+ in the 6.x family.'
         }
         $installerDirectory = $paths.InstallerDirectory
