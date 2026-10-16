@@ -72,4 +72,4 @@ or an exemption from Smart App Control. See [signing options](docs/SIGNING.md).
 Copyright (C) 2026 AnoY606-git and FrameScope contributors.
 Own code: **[GPL-3.0-only](LICENSE)**, without warranty. Third-party code retains
 its licenses; see [notices](THIRD_PARTY_NOTICES.md) and [attribution](ATTRIBUTION.md).
-Repository: `AnoY606-git/framescope` (private).
+Repository: [AnoY606-git/framescope](https://github.com/AnoY606-git/framescope).

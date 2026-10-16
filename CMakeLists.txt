@@ -90,7 +90,7 @@ if(FRAMESCOPE_BUILD_DXGI)
 endif()
 
 if(FRAMESCOPE_BUILD_VULKAN)
-  set(vulkan_sources native/vulkan/layer.cpp)
+  set(vulkan_sources native/vulkan/layer.cpp native/vulkan/FrameScope.Vulkan.def)
   add_library(FrameScope.Vulkan SHARED ${vulkan_sources})
   set_target_properties(FrameScope.Vulkan PROPERTIES PREFIX "")
   target_compile_definitions(FrameScope.Vulkan PRIVATE VK_NO_PROTOTYPES VK_USE_PLATFORM_WIN32_KHR)

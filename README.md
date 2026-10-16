@@ -87,4 +87,4 @@ Copyright (C) 2026 AnoY606-git and FrameScope contributors.
 Собственный код — **[GPL-3.0-only](LICENSE)**, без гарантии.
 Сторонние компоненты сохраняют свои условия:
 [уведомления](THIRD_PARTY_NOTICES.md), [происхождение](ATTRIBUTION.md),
-[авторы](AUTHORS.md). Репозиторий: `AnoY606-git/framescope` (private).
+[авторы](AUTHORS.md). Репозиторий: [AnoY606-git/framescope](https://github.com/AnoY606-git/framescope).

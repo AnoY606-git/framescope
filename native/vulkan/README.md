@@ -7,8 +7,9 @@
 
 ## Подключение к родительской сборке
 
-- Sources: `native/vulkan/layer.cpp`; Windows export definition:
-  `native/vulkan/FrameScope.Vulkan.def` (экспорты также имеют `dllexport`).
+- Sources: `native/vulkan/layer.cpp` и обязательный Windows export definition
+  `native/vulkan/FrameScope.Vulkan.def`. Экспорт задаётся через `.def`, без
+  конфликтующего с SDK повторного добавления `dllexport` к negotiation entrypoint.
 - Output: **`FrameScope.Vulkan.dll`**, без `lib` prefix; скопировать рядом неизменённый
   **`FrameScope.Vulkan.json`**.
 - C++17 или новее, Windows x64. Для MSVC использовать `/utf-8`.

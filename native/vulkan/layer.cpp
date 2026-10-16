@@ -39,7 +39,9 @@
 #include <utility>
 #include <vector>
 
-#define FS_EXPORT extern "C" __declspec(dllexport) VKAPI_ATTR
+// Экспорт задаётся .def: SDK уже объявляет negotiation entrypoint без dllexport.
+// Повторное добавление DLL linkage к определению отвергается MSVC.
+#define FS_EXPORT extern "C" VKAPI_ATTR
 
 FS_EXPORT PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance, const char*);
 FS_EXPORT PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice, const char*);
@@ -1187,12 +1189,6 @@ bool IsDeviceInterceptor(const char* name) noexcept {
 
 } // namespace
 
-// vk_layer.h объявляет этот entrypoint даже при VK_NO_PROTOTYPES. Clang считает
-// добавление dllexport к последующему определению предупреждением, хотя ABI тот же.
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdll-attribute-on-redeclaration"
-#endif
 FS_EXPORT VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* version) {
     if (!version || version->sType != LAYER_NEGOTIATE_INTERFACE_STRUCT ||
         version->loaderLayerInterfaceVersion < 2) return VK_ERROR_INITIALIZATION_FAILED;
@@ -1202,9 +1198,6 @@ FS_EXPORT VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersion(VkNegotiate
     version->pfnGetPhysicalDeviceProcAddr = vk_layerGetPhysicalDeviceProcAddr;
     return VK_SUCCESS;
 }
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 FS_EXPORT PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* name) {
     if (!name) return nullptr;
