@@ -34,7 +34,10 @@
 | Новый strip HUD в exclusive | 3/3, exit 0 | DX11 849/849, DX12 849/849, Vulkan 851/851 Demo/HUD presents; actual exclusive acquired, видимость подтверждена PNG |
 | Live Intel Debug probe | Exit 0, legacy mode | GPU 57 C, VRAM 60 C, card 23.12 W, GPU 400 MHz, memory 19000 driver-reported effective MHz, physical VRAM 12 GiB; это разовый snapshot, не константы |
 | Live WPF controller Intel pipeline | Exit 0, Starting → Live | Точный PCI 0000:03:00.0/LUID match; availableMask 811, card 23.08 W, GPU 56 C; настоящий helper stdout, без файлового fallback |
-| Self-contained publish | Собран | Финальный аудит состава пакета и установщика фиксируется отдельно |
+| Готовый WPF GUI → native HUD | Passed | В изолированном portable QA-профиле: Present 99 → 1394 → 1568, оба lows прогреты; реальный полный DX11 screenshot с Intel LIVE |
+| Self-contained publish / package audit | Passed, Debug | 5 native x64 PE, без driver DLL; 85 managed checks, 4/4 CTest, source fingerprint и native closure проверены |
+| Debug EXE / portable ZIP / source ZIP | Собраны | 47.85 / 65.96 / 0.37 MiB; SHA256SUMS и ZIP CRC проверены, commit b7cca6e |
+| Распакованный portable → Intel controller | Exit 0, LIVE | Самодостаточный FrameScope.exe из реального ZIP; marker найден, GPU 57 C, card 22.04 W; без dotnet launcher и saved telemetry |
 | Install / update / uninstall | Не проверено | Компиляция setup не заменяет установку на чистой системе |
 | Game overhead budget | Не измерен | Debug и короткий VSync smoke не являются сравнительным benchmark |
 | Доверенная подпись | Не получена | Локальный Debug не является доверенно подписанным кодом |

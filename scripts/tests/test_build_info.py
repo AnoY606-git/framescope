@@ -2,15 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Configuration/provenance tests use synthetic caches, never run a compiler or renderer."""
 import json
+import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import build_info
 import release_support as support
-from test_support import temporary_directory
+from test_support import existing_directory_alias, temporary_directory
 
 
 def cache_fixture(root, configuration="Debug", build=None, output=None):
@@ -25,6 +27,25 @@ def cache_fixture(root, configuration="Debug", build=None, output=None):
 
 
 class BuildInfoTests(unittest.TestCase):
+    def test_alias_prefixed_temp_fixture_yields_canonical_root_and_exact_artifact_paths(self):
+        with temporary_directory() as parent_directory:
+            parent = Path(parent_directory)
+            alias = existing_directory_alias(parent)
+            self.assertTrue(alias.samefile(parent))
+            with patch.dict(os.environ, {"LOCALAPPDATA": str(parent / "unused-local-app-data")}), \
+                    patch.object(tempfile, "tempdir", str(alias)):
+                with temporary_directory() as directory:
+                    root = Path(directory)
+                    self.assertEqual(root.resolve(), root)
+                    self.assertEqual(parent, root.parent)
+                    root_alias = alias / root.name
+                    self.assertTrue(root_alias.samefile(root))
+                    for configuration in ("Release", "Debug"):
+                        canonical_paths = support.artifact_paths(root, configuration)
+                        self.assertEqual(canonical_paths, support.artifact_paths(root_alias, configuration))
+                    self.assertEqual(root / "artifacts/native", support.artifact_paths(root_alias, "Release")["native_build"])
+                    self.assertEqual(root / "artifacts/native-debug", support.artifact_paths(root_alias, "Debug")["native_build"])
+
     def test_configuration_defaults_are_isolated_and_release_is_backward_compatible(self):
         with temporary_directory() as directory:
             root = Path(directory)

@@ -10,6 +10,10 @@ The primary target is the project's own three-API `FrameScope.Demo.exe`.
 **CS2 is explicitly out of scope.** Compatibility with third-party games or
 anti-cheat software is not claimed.
 
+![Native HUD with live Intel telemetry in the separate DX11 Demo](docs/images/hud-panel.png)
+
+*An actual Debug capture from the controller/native HUD, not a UI mockup.*
+
 ## Scope
 
 - Panel and compact-strip profiles with crisp system fonts, semantic accents,

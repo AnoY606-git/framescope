@@ -10,7 +10,7 @@ import subprocess
 import sys
 import unittest
 
-from test_support import temporary_directory
+from test_support import existing_directory_alias, temporary_directory
 
 
 @unittest.skipUnless(os.name == "nt", "Windows PowerShell contract tests need Windows")
@@ -415,6 +415,38 @@ if (-not $caught) { throw 'Changed native cache was accepted as already verified
 Write-Output 'cache-proof-ok'
 """ % str(root).replace("'", "''"))
             self.assertIn("cache-proof-ok", output)
+
+    def test_equivalent_root_alias_preserves_cached_output_and_cannot_bypass_configuration_isolation(self):
+        with temporary_directory() as directory:
+            root = Path(directory)
+            alias = existing_directory_alias(root)
+            self.assertTrue(alias.samefile(root))
+            native = root / "artifacts/debug-native/bin"
+            native.mkdir(parents=True)
+            release_native = root / "artifacts/native/bin"
+            release_native.mkdir(parents=True)
+            release_alias = existing_directory_alias(release_native)
+            self.assertTrue(release_alias.samefile(release_native))
+            build = root / "artifacts/build-debug"
+            build.mkdir(parents=True)
+            (build / "CMakeCache.txt").write_text(
+                f"CMAKE_BUILD_TYPE:STRING=Debug\nCMAKE_GENERATOR:INTERNAL=Ninja\n"
+                f"CMAKE_HOME_DIRECTORY:INTERNAL={root.as_posix()}\n"
+                f"FRAMESCOPE_NATIVE_OUTPUT_DIRECTORY:PATH={native.as_posix()}\n", encoding="utf-8")
+            output = self.invoke("""
+$script:RepositoryRoot = '%s'
+$paths = Get-FrameScopePaths -Configuration Debug -NativeBuildDirectory 'artifacts/build-debug'
+if ($paths.NativeOutputDirectory -ne '%s') { throw 'Equivalent root alias changed the selected output.' }
+Assert-NativeConfiguration $paths
+$isolated = $false
+try {
+    Get-FrameScopePaths -Configuration Debug -NativeBuildDirectory 'artifacts/fresh-debug' -NativeOutputDirectory '%s'
+}
+catch { $isolated = $_.Exception.Message -like '*must not share*' }
+if (-not $isolated) { throw 'Release output alias bypassed Debug/Release isolation.' }
+Write-Output 'alias-isolation-ok'
+""" % tuple(str(path).replace("'", "''") for path in (alias, native, release_alias)))
+            self.assertIn("alias-isolation-ok", output)
 
 
 if __name__ == "__main__":
